@@ -1,0 +1,24 @@
+# Entorno virtual
+venv/
+env/
+
+# API keys y datos sensibles
+.env
+*.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Data outputs
+data/temp_*.csv
+data/backup_*.csv
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# OS
+.DS_Store
+Thumbs.db
