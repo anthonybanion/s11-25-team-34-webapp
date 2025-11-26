@@ -20,7 +20,7 @@ cp .env.example .env
 # Editar .env y agregar tu API key de Climatiq
 ```
 
-## 🔑 API Key (Opcional)
+## API Key (Opcional)
 
 Este módulo puede funcionar CON o SIN API de Climatiq:
 
@@ -29,7 +29,7 @@ Este módulo puede funcionar CON o SIN API de Climatiq:
 
 Para obtener API key gratuita: https://www.climatiq.io/
 
-## 📊 Uso desde el backend
+## Uso desde el backend
 ```python
 from data_module.impact_calculator import calcular_impacto_producto
 
@@ -48,10 +48,10 @@ producto = {
 resultado = calcular_impacto_producto(producto)
 
 print(resultado['huella_total'])  # 0.599
-print(resultado['eco_badge'])     # 🌱 Bajo impacto
+print(resultado['eco_badge'])     #  Bajo impacto
 ```
 
-## 🗂️ Estructura
+## Estructura
 ```
 ecoshop-data/
 ├── data/                    # Datos
@@ -64,7 +64,7 @@ ecoshop-data/
 └── requirements.txt         # Dependencias
 ```
 
-## 🔧 Testing
+## Testing
 ```bash
 python data_module/impact_calculator.py
 ```
