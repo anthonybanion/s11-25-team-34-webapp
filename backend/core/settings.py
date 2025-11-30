@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'rewards',
     #  Library apps
     'rest_framework',
+    'rest_framework.authtoken', # token authentication
     "drf_yasg",
 ]
 
@@ -71,7 +72,11 @@ MIDDLEWARE = [
 ]
 
 # CORS Configuration - step 3
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # React
+    "http://127.0.0.1:5173",
+    # Add other allowed origins as needed
+]
 
 ROOT_URLCONF = 'core.urls'
 
@@ -155,7 +160,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+ # URL to use when referring to static files located in STATIC_ROOT.
+STATIC_URL = 'static/' 
+# The absolute path to the directory where collectstatic 
+# will collect static files for deployment.
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -163,5 +172,30 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler'
+    # Custom Exception Handler
+    'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
+
+     # Authentication with Token
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    
+    # Permissions - All APIs require authentication by default
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated', 
+    ],
+    
+    # Pagination
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Token': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
 }
