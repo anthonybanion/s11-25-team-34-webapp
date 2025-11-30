@@ -36,6 +36,13 @@ ALLOWED_HOSTS = ['*']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
+# Cloudinary configuration
+# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': 'tu-nombre',
+#     'API_KEY': 'tu-key', 
+#     'API_SECRET': 'tu-secret'
+# }
 
 # Application definition
 
@@ -46,6 +53,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Cloudinary for media storage
+    #'cloudinary_storage',
+    
      # Cors stap 1
     "corsheaders",
       # Mis apps
