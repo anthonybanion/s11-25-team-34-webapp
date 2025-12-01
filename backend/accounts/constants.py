@@ -50,4 +50,5 @@ SUCCESS_LOGOUT = "Logout successful"
 SUCCESS_PROFILE_UPDATED = "Profile updated successfully"
 SUCCESS_ECO_POINTS_ADDED = "Eco points added successfully"
 SUCCESS_BRAND_STORY_UPDATED = "Brand story updated successfully"
+SUCCESS_PASSWORD_CHANGED = "Changed password successfully"
 

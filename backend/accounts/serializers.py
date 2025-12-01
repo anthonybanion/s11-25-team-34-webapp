@@ -197,3 +197,26 @@ class BrandStoryUpdateSerializer(serializers.Serializer):
         if len(value) > MAX_SUSTAINABILITY_STORY_LENGTH:
             raise serializers.ValidationError(ERROR_STORY_EXCEED_LENGTH)
         return value
+
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True, validators=[validate_password])
+    
+    def validate_current_password(self, value):
+        if not value:
+            raise serializers.ValidationError("Current password is required")
+        return value
+    
+    def validate_new_password(self, value):
+        if not value:
+            raise serializers.ValidationError("New password is required")
+        return value
+
+
+class ConfirmDeleteSerializer(serializers.Serializer):
+    confirmation = serializers.CharField(required=True)
+    
+    def validate_confirmation(self, value):
+        if value.lower() != "delete my account":
+            raise serializers.ValidationError("Please type 'delete my account' to confirm")
+        return value

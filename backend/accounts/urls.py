@@ -20,9 +20,12 @@ urlpatterns = [
     # User profile endpoints
     path('profile/', views.get_user_profile, name='get-user-profile'),
     path('profile/update/', views.update_user_profile, name='update-user-profile'),
+    path('profile/change-password/', views.change_password, name='change-password'),
     path('profile/eco-points/', views.add_eco_points, name='add-eco-points'),
+    path('profile/delete/', views.delete_user_account, name='delete-user-account'),
     
     # Brand profile endpoints (for brand managers)
     path('brand/profile/', views.get_brand_profile, name='get-brand-profile'),
     path('brand/story/', views.update_brand_story, name='update-brand-story'),
+    path('brand/delete/', views.delete_brand_profile, name='delete-brand-profile'),
 ]

@@ -11,6 +11,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from .constants import *
 
 from .serializers import (
     UserRegistrationSerializer, 
@@ -19,7 +20,9 @@ from .serializers import (
     BrandProfileSerializer,
     BrandManagerRegistrationSerializer,
     EcoPointsUpdateSerializer,
-    BrandStoryUpdateSerializer
+    BrandStoryUpdateSerializer,
+    ChangePasswordSerializer,
+    ConfirmDeleteSerializer
 )
 from .services import auth_service, user_profile_service, brand_profile_service
 from .constants import *
@@ -199,7 +202,7 @@ def add_eco_points(request):
             result = user_profile_service.update_eco_points(
                 request.user.id, 
                 serializer.validated_data['points'],
-                serializer.validated_data.get('carbon_saved', 0.0)
+                serializer.validated_data.get('carbon_saved', MIN_CARBON_SAVED)
             )
             return Response({
                 'message': SUCCESS_ECO_POINTS_ADDED,
@@ -244,3 +247,51 @@ def update_user_profile(request):
         
     except BusinessException as e:
         return Response({'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_user_account(request):
+    """
+    Delete user account and all associated data
+    """
+    try:
+        user_profile_service.delete_user(request.user.id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except BusinessException as e:
+        return Response({'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_brand_profile(request):
+    """
+    Delete brand profile (user remains)
+    """
+    try:
+        brand_profile_service.delete_brand_profile(request.user.id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except BusinessException as e:
+        return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """
+    Change user password
+    """
+    serializer = ChangePasswordSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        try:
+            auth_service.change_password(
+                request.user.id,
+                serializer.validated_data['current_password'],
+                serializer.validated_data['new_password']
+            )
+            return Response({'message': SUCCESS_PASSWORD_CHANGED})
+            
+        except BusinessException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
