@@ -221,6 +221,34 @@ class UserProfileService:
             raise BusinessException(ERROR_USER_NOT_FOUND)
         except UserProfile.DoesNotExist:
             raise BusinessException(ERROR_PROFILE_NOT_FOUND)
+        
+    @transaction.atomic
+    def update_user_profile(self, user_id, validated_data):
+        """
+        Update user profile information with validated data
+        """
+        try:
+            user = User.objects.get(id=user_id)
+            user_profile = UserProfile.objects.get(user=user)
+            
+            # Actualizar campos del User
+            if 'first_name' in validated_data:
+                user.first_name = validated_data['first_name']
+            if 'last_name' in validated_data:
+                user.last_name = validated_data['last_name']
+            user.save()
+            
+            # Actualizar campos del UserProfile
+            if 'phone' in validated_data:
+                user_profile.phone = validated_data['phone']
+            user_profile.save()
+            
+            return self.get_user_profile(user_id)
+            
+        except User.DoesNotExist:
+            raise BusinessException(ERROR_USER_NOT_FOUND)
+        except UserProfile.DoesNotExist:
+            raise BusinessException(ERROR_PROFILE_NOT_FOUND)
     
     @transaction.atomic
     def update_eco_points(self, user_id, points_to_add, carbon_saved=MIN_CARBON_SAVED):
@@ -256,6 +284,7 @@ class UserProfileService:
         except UserProfile.DoesNotExist:
             raise BusinessException(ERROR_PROFILE_NOT_FOUND)
     
+    
     @transaction.atomic
     def delete_user(self, user_id):
         """
@@ -284,6 +313,8 @@ class UserProfileService:
             
         except User.DoesNotExist:
             raise BusinessException(ERROR_USER_NOT_FOUND)
+
+
 
 
 

@@ -91,7 +91,42 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'username', 'email', 'first_name', 'last_name', 'phone', 
             'eco_points', 'total_carbon_saved', 'is_brand_manager'
         ]
-        read_only_fields = ['eco_points', 'total_carbon_saved', 'is_brand_manager']
+        read_only_fields = ['username', 'email', 'first_name', 'last_name', 'eco_points', 'total_carbon_saved', 'is_brand_manager']
+
+class UserProfileUpdateSerializer(serializers.Serializer):
+    first_name = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        max_length=150,
+        trim_whitespace=True
+    )
+    last_name = serializers.CharField(
+        required=False,
+        allow_blank=True, 
+        max_length=150,
+        trim_whitespace=True
+    )
+    phone = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        max_length=20,
+        trim_whitespace=True
+    )
+
+    def validate_first_name(self, value):
+        if value and not value.strip():
+            raise serializers.ValidationError("First name cannot be empty")
+        return value
+
+    def validate_last_name(self, value):
+        if value and not value.strip():
+            raise serializers.ValidationError("Last name cannot be empty")
+        return value
+
+    def validate_phone(self, value):
+        if value and not value.strip():
+            raise serializers.ValidationError("Phone cannot be empty")
+        return value
 
 
 class BrandProfileSerializer(serializers.ModelSerializer):
