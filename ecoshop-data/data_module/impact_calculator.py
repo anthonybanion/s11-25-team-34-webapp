@@ -5,6 +5,7 @@ Calcula huellas de carbono para productos sostenibles
 import os
 import requests
 import pandas as pd
+import numpy as np
 from dotenv import load_dotenv
 from time import sleep
 from typing import Optional, Dict
@@ -159,14 +160,16 @@ class ImpactCalculator:
 
         # Priorizar parámetros según disponibilidad
         if pd.notna(producto.get("money")):
-            payload["parameters"]["money"] = producto["money"]
-            payload["parameters"]["money_unit"] = producto.get("money_unit", "USD")
+            payload["parameters"]["money"] = float(producto["money"])
+            payload["parameters"]["money_unit"] = str(producto.get("money_unit", "USD"))
         elif pd.notna(producto.get("weight")):
-            payload["parameters"]["weight"] = producto["weight"]
-            payload["parameters"]["weight_unit"] = producto.get("weight_unit", "g")
+            payload["parameters"]["weight"] = float(producto["weight"])
+            payload["parameters"]["weight_unit"] = str(producto.get("weight_unit", "g"))
         elif pd.notna(producto.get("volume")):
-            payload["parameters"]["volume"] = producto["volume"]
-            payload["parameters"]["volume_unit"] = producto.get("volume_unit", "ml")
+            payload["parameters"]["volume"] = float(producto["volume"])
+            payload["parameters"]["volume_unit"] = str(
+                producto.get("volume_unit", "ml")
+            )
 
         try:
             response = requests.post(
@@ -350,7 +353,7 @@ class ImpactCalculator:
             return "🌳 Alto impacto"
 
 
-# === FUNCIÓN AUXILIAR PARA EL BACKEND ===
+# FUNCIÓN AUXILIAR PARA BACKEND
 def calcular_impacto_producto(
     producto_data: Dict, api_key: Optional[str] = None
 ) -> Dict:
@@ -364,7 +367,7 @@ def calcular_impacto_producto(
     Returns:
         Dict con producto + huellas calculadas
 
-    Ejemplo de uso desde el backend:
+    Ejemplo de uso:
         from data_module.impact_calculator import calcular_impacto_producto
 
         producto = {
@@ -372,14 +375,38 @@ def calcular_impacto_producto(
             "product": "SilkBalance Emulsion",
             "packaging_material": "plastic_bottle",
             "weight": 150,
-            ...
+            "base_type": "water_based",
+            "origin_country": "ARG",
+            "transportation_type": "sea",
+            "recyclable_packaging": True,
+            "ingredient_main": "Green Tea",
+            "money": 15.99,
+            "money_unit": "USD"
         }
 
         resultado = calcular_impacto_producto(producto)
         print(resultado['huella_total'])
     """
+    # Limpiar y convertir tipos de datos
+    producto_clean = {}
+    for key, value in producto_data.items():
+        if pd.notna(value):
+            # Convertir numpy/pandas types a Python nativos
+            if isinstance(value, (np.integer, np.floating)):
+                producto_clean[key] = (
+                    float(value) if isinstance(value, np.floating) else int(value)
+                )
+            elif isinstance(value, (np.bool_)):
+                producto_clean[key] = bool(value)
+            elif isinstance(value, str):
+                producto_clean[key] = str(value).strip()
+            else:
+                producto_clean[key] = value
+        else:
+            producto_clean[key] = None
+
     calculator = ImpactCalculator(api_key=api_key)
-    return calculator.calcular_producto_individual(producto_data)
+    return calculator.calcular_producto_individual(producto_clean)
 
 
 # === SCRIPT PRINCIPAL (para testing) ===
