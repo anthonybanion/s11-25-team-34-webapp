@@ -73,6 +73,9 @@ class UserLoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Username is required")
         return value
 
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True, validators=[validate_password])
 
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
@@ -126,6 +129,21 @@ class UserProfileUpdateSerializer(serializers.Serializer):
     def validate_phone(self, value):
         if value and not value.strip():
             raise serializers.ValidationError("Phone cannot be empty")
+        return value
+
+
+class EcoPointsUpdateSerializer(serializers.Serializer):
+    points = serializers.IntegerField(required=True)
+    carbon_saved = serializers.FloatField(required=False, default=0.0)
+    
+    def validate_points(self, value):
+        if abs(value) > MAX_ECO_POINTS_ADDITION:
+            raise serializers.ValidationError(ERROR_POINTS_EXCEED_LIMIT)
+        return value
+    
+    def validate_carbon_saved(self, value):
+        if abs(value) > MAX_CARBON_SAVED_ADDITION:
+            raise serializers.ValidationError(ERROR_CARBON_EXCEED_LIMIT)
         return value
 
 
@@ -204,21 +222,6 @@ class BrandManagerRegistrationSerializer(UserRegistrationSerializer):
         return value
 
 
-class EcoPointsUpdateSerializer(serializers.Serializer):
-    points = serializers.IntegerField(required=True)
-    carbon_saved = serializers.FloatField(required=False, default=0.0)
-    
-    def validate_points(self, value):
-        if abs(value) > MAX_ECO_POINTS_ADDITION:
-            raise serializers.ValidationError(ERROR_POINTS_EXCEED_LIMIT)
-        return value
-    
-    def validate_carbon_saved(self, value):
-        if abs(value) > MAX_CARBON_SAVED_ADDITION:
-            raise serializers.ValidationError(ERROR_CARBON_EXCEED_LIMIT)
-        return value
-
-
 class BrandStoryUpdateSerializer(serializers.Serializer):
     sustainability_story = serializers.CharField(
         required=True,
@@ -233,9 +236,7 @@ class BrandStoryUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError(ERROR_STORY_EXCEED_LENGTH)
         return value
 
-class ChangePasswordSerializer(serializers.Serializer):
-    current_password = serializers.CharField(required=True, write_only=True)
-    new_password = serializers.CharField(required=True, write_only=True, validators=[validate_password])
+
     
     def validate_current_password(self, value):
         if not value:

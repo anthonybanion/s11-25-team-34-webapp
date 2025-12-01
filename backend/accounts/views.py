@@ -30,6 +30,7 @@ from .constants import *
 from .services import BusinessException
 
 
+############# Authentication Views #############
 class RegisterUserView(APIView):
     """
     Register a new regular user
@@ -54,44 +55,7 @@ class RegisterUserView(APIView):
                     'phone': serializer.validated_data.get('phone', '')
                 }
                 
-                result = auth_service.register_user(user_data, profile_data)
-                return Response({
-                    'message': SUCCESS_REGISTRATION,
-                    'data': result
-                }, status=status.HTTP_201_CREATED)
-                
-            except BusinessException as e:
-                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class RegisterBrandManagerView(APIView):
-    """
-    Register a new brand manager user
-    """
-    permission_classes = [AllowAny]
-    
-    @swagger_auto_schema(request_body=BrandManagerRegistrationSerializer)
-    def post(self, request):
-        serializer = BrandManagerRegistrationSerializer(data=request.data)
-        
-        if serializer.is_valid():
-            try:
-                user_data = {
-                    'username': serializer.validated_data['username'],
-                    'email': serializer.validated_data['email'],
-                    'password': serializer.validated_data['password'],
-                    'first_name': serializer.validated_data.get('first_name', ''),
-                    'last_name': serializer.validated_data.get('last_name', '')
-                }
-                
-                brand_data = {
-                    'brand_name': serializer.validated_data['brand_name'],
-                    'sustainability_story': serializer.validated_data.get('sustainability_story', '')
-                }
-                
-                result = user_profile_service.create_brand_manager(user_data, brand_data)
+                result = user_profile_service.register_user(user_data, profile_data)
                 return Response({
                     'message': SUCCESS_REGISTRATION,
                     'data': result
@@ -142,7 +106,69 @@ class LogoutUserView(APIView):
             return Response({'message': SUCCESS_LOGOUT})
         except BusinessException as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+class ChangePasswordView(APIView):
+    """
+    Change user password
+    """
+    permission_classes = [IsAuthenticated]
+    
+    @swagger_auto_schema(request_body=ChangePasswordSerializer)
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                auth_service.change_password(
+                    request.user.id,
+                    serializer.validated_data['current_password'],
+                    serializer.validated_data['new_password']
+                )
+                return Response({'message': SUCCESS_PASSWORD_CHANGED})
+                
+            except BusinessException as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+############# User Profile Views #############
+
+class RegisterBrandManagerView(APIView):
+    """
+    Register a new brand manager user
+    """
+    permission_classes = [AllowAny]
+    
+    @swagger_auto_schema(request_body=BrandManagerRegistrationSerializer)
+    def post(self, request):
+        serializer = BrandManagerRegistrationSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                user_data = {
+                    'username': serializer.validated_data['username'],
+                    'email': serializer.validated_data['email'],
+                    'password': serializer.validated_data['password'],
+                    'first_name': serializer.validated_data.get('first_name', ''),
+                    'last_name': serializer.validated_data.get('last_name', '')
+                }
+                
+                brand_data = {
+                    'brand_name': serializer.validated_data['brand_name'],
+                    'sustainability_story': serializer.validated_data.get('sustainability_story', '')
+                }
+                
+                result = brand_profile_service.create_brand_manager(user_data, brand_data)
+                return Response({
+                    'message': SUCCESS_REGISTRATION,
+                    'data': result
+                }, status=status.HTTP_201_CREATED)
+                
+            except BusinessException as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GetUserProfileView(APIView):
     """
@@ -157,77 +183,6 @@ class GetUserProfileView(APIView):
             return Response(serializer.data)
         except BusinessException as e:
             return Response({'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
-
-
-class GetBrandProfileView(APIView):
-    """
-    Get current user's brand profile (if brand manager)
-    """
-    permission_classes = [IsAuthenticated]
-    
-    def get(self, request):
-        try:
-            brand_data = brand_profile_service.get_brand_profile(request.user.id)
-            serializer = BrandProfileSerializer(brand_data)
-            return Response(serializer.data)
-        except BusinessException as e:
-            return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
-
-
-class UpdateBrandStoryView(APIView):
-    """
-    Update brand sustainability story
-    """
-    permission_classes = [IsAuthenticated]
-    
-    @swagger_auto_schema(request_body=BrandStoryUpdateSerializer)
-    def put(self, request):
-        serializer = BrandStoryUpdateSerializer(data=request.data)
-        
-        if serializer.is_valid():
-            try:
-                brand_profile = brand_profile_service.update_brand_story(
-                    request.user.id, 
-                    serializer.validated_data['sustainability_story']
-                )
-                return Response({
-                    'message': SUCCESS_BRAND_STORY_UPDATED,
-                    'data': BrandProfileSerializer(brand_profile).data
-                })
-                
-            except BusinessException as e:
-                return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class AddEcoPointsView(APIView):
-    """
-    Add eco points and carbon saved to user profile
-    """
-    permission_classes = [IsAuthenticated]
-    
-    @swagger_auto_schema(request_body=EcoPointsUpdateSerializer)
-    def post(self, request):
-        serializer = EcoPointsUpdateSerializer(data=request.data)
-        
-        if serializer.is_valid():
-            try:
-                result = user_profile_service.update_eco_points(
-                    request.user.id, 
-                    serializer.validated_data['points'],
-                    serializer.validated_data.get('carbon_saved', MIN_CARBON_SAVED)
-                )
-                return Response({
-                    'message': SUCCESS_ECO_POINTS_ADDED,
-                    'data': result
-                })
-                
-            except BusinessException as e:
-                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class UpdateUserProfileView(APIView):
     """
@@ -257,7 +212,33 @@ class UpdateUserProfileView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': 'Error interno del servidor'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        
+class AddEcoPointsView(APIView):
+    """
+    Add eco points and carbon saved to user profile
+    """
+    permission_classes = [IsAuthenticated]
+    
+    @swagger_auto_schema(request_body=EcoPointsUpdateSerializer)
+    def post(self, request):
+        serializer = EcoPointsUpdateSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                result = user_profile_service.update_eco_points(
+                    request.user.id, 
+                    serializer.validated_data['points'],
+                    serializer.validated_data.get('carbon_saved', MIN_CARBON_SAVED)
+                )
+                return Response({
+                    'message': SUCCESS_ECO_POINTS_ADDED,
+                    'data': result
+                })
+                
+            except BusinessException as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class DeleteUserAccountView(APIView):
     """
@@ -273,6 +254,47 @@ class DeleteUserAccountView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 
+############## Brand Profile Views #############
+class GetBrandProfileView(APIView):
+    """
+    Get current user's brand profile (if brand manager)
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        try:
+            brand_data = brand_profile_service.get_brand_profile(request.user.id)
+            serializer = BrandProfileSerializer(brand_data)
+            return Response(serializer.data)
+        except BusinessException as e:
+            return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
+
+class UpdateBrandStoryView(APIView):
+    """
+    Update brand sustainability story
+    """
+    permission_classes = [IsAuthenticated]
+    
+    @swagger_auto_schema(request_body=BrandStoryUpdateSerializer)
+    def put(self, request):
+        serializer = BrandStoryUpdateSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                brand_profile = brand_profile_service.update_brand_story(
+                    request.user.id, 
+                    serializer.validated_data['sustainability_story']
+                )
+                return Response({
+                    'message': SUCCESS_BRAND_STORY_UPDATED,
+                    'data': BrandProfileSerializer(brand_profile).data
+                })
+                
+            except BusinessException as e:
+                return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class DeleteBrandProfileView(APIView):
     """
     Delete brand profile (user remains)
@@ -287,26 +309,3 @@ class DeleteBrandProfileView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ChangePasswordView(APIView):
-    """
-    Change user password
-    """
-    permission_classes = [IsAuthenticated]
-    
-    @swagger_auto_schema(request_body=ChangePasswordSerializer)
-    def post(self, request):
-        serializer = ChangePasswordSerializer(data=request.data)
-        
-        if serializer.is_valid():
-            try:
-                auth_service.change_password(
-                    request.user.id,
-                    serializer.validated_data['current_password'],
-                    serializer.validated_data['new_password']
-                )
-                return Response({'message': SUCCESS_PASSWORD_CHANGED})
-                
-            except BusinessException as e:
-                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

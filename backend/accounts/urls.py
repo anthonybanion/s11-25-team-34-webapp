@@ -16,11 +16,12 @@ urlpatterns = [
     path('auth/register/brand-manager/', views.RegisterBrandManagerView.as_view(), name='register-brand-manager'),
     path('auth/login/', views.LoginUserView.as_view(), name='login-user'),
     path('auth/logout/', views.LogoutUserView.as_view(), name='logout-user'),
+    path('auth/change-password/', views.ChangePasswordView.as_view(), name='change-password'),
+
     
     # User profile endpoints
     path('profile/', views.GetUserProfileView.as_view(), name='get-user-profile'),
     path('profile/update/', views.UpdateUserProfileView.as_view(), name='update-user-profile'),
-    path('profile/change-password/', views.ChangePasswordView.as_view(), name='change-password'),
     path('profile/eco-points/', views.AddEcoPointsView.as_view(), name='add-eco-points'),
     path('profile/delete/', views.DeleteUserAccountView.as_view(), name='delete-user-account'),
     
