@@ -35,7 +35,6 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', include('accounts.urls')), # Authentication routes
     path('api/accounts/', include('accounts.urls')),
     # path('api/products/', include('products.urls')), 
     # path('api/cart/', include('cart.urls')),  
@@ -44,8 +43,8 @@ urlpatterns = [
 
     
     # API Documentation
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0)),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0)),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 # Serve media files during development
 if settings.DEBUG:

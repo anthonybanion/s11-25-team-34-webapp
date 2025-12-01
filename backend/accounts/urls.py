@@ -12,20 +12,21 @@ from . import views
 
 urlpatterns = [
     # Authentication endpoints
-    path('auth/register/', views.register_user, name='register-user'),
-    path('auth/register/brand-manager/', views.register_brand_manager, name='register-brand-manager'),
-    path('auth/login/', views.login_user, name='login-user'),
-    path('auth/logout/', views.logout_user, name='logout-user'),
+    path('auth/register/', views.RegisterUserView.as_view(), name='register-user'),
+    path('auth/register/brand-manager/', views.RegisterBrandManagerView.as_view(), name='register-brand-manager'),
+    path('auth/login/', views.LoginUserView.as_view(), name='login-user'),
+    path('auth/logout/', views.LogoutUserView.as_view(), name='logout-user'),
+    path('auth/change-password/', views.ChangePasswordView.as_view(), name='change-password'),
+
     
     # User profile endpoints
-    path('profile/', views.get_user_profile, name='get-user-profile'),
-    path('profile/update/', views.update_user_profile, name='update-user-profile'),
-    path('profile/change-password/', views.change_password, name='change-password'),
-    path('profile/eco-points/', views.add_eco_points, name='add-eco-points'),
-    path('profile/delete/', views.delete_user_account, name='delete-user-account'),
+    path('profile/', views.GetUserProfileView.as_view(), name='get-user-profile'),
+    path('profile/update/', views.UpdateUserProfileView.as_view(), name='update-user-profile'),
+    path('profile/eco-points/', views.AddEcoPointsView.as_view(), name='add-eco-points'),
+    path('profile/delete/', views.DeleteUserAccountView.as_view(), name='delete-user-account'),
     
-    # Brand profile endpoints (for brand managers)
-    path('brand/profile/', views.get_brand_profile, name='get-brand-profile'),
-    path('brand/story/', views.update_brand_story, name='update-brand-story'),
-    path('brand/delete/', views.delete_brand_profile, name='delete-brand-profile'),
+    # Brand profile endpoints
+    path('brand/profile/', views.GetBrandProfileView.as_view(), name='get-brand-profile'),
+    path('brand/story/', views.UpdateBrandStoryView.as_view(), name='update-brand-story'),
+    path('brand/delete/', views.DeleteBrandProfileView.as_view(), name='delete-brand-profile'),
 ]

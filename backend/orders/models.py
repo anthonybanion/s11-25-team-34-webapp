@@ -45,15 +45,15 @@ class OrderItem(models.Model):
 class Payment(models.Model):
     PAYMENT_METHODS = [
         ('stripe', 'Stripe'),
-        ('mercadopago', 'MercadoPago'),
-        ('paypal', 'PayPal')
+        ('mercadopago', 'MercadoPago')
     ]
     
     PAYMENT_STATUS = [
         ('pending', 'Pending'),
-        ('completed', 'Completed'),
-        ('failed', 'Failed'),
-        ('refunded', 'Refunded')
+        ('paid', 'Paid'),
+        ('shipped', 'Shipped'),
+        ('cancelled', 'Cancelled'),
+        ('delivered','Delivered')
     ]
     
     order = models.OneToOneField(Order, on_delete=models.CASCADE)
