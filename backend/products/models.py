@@ -4,7 +4,8 @@ Description: Category and Product Models
 File: models.py
 Author: Anthony Bañon
 Created: 2025-11-29
-Last Updated: 2025-11-29
+Last Updated: 2025-12-03
+Modify: Add image field to Category model
 """
 
 

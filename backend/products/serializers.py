@@ -1,4 +1,13 @@
-# serializers/category_serializer.py
+"""
+Description: Category Serializers
+ 
+File: serializers.py
+Author: Anthony Bañon
+Created: 2025-12-03
+Last Updated: 2025-12-03
+"""
+
+
 from rest_framework import serializers
 from django.utils.text import slugify
 from .models import Category

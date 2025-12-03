@@ -1,4 +1,13 @@
-# views/category_view.py
+"""
+Description: Catgeory Views
+ 
+File: views.py
+Author: Anthony Bañon
+Created: 2025-12-03
+Last Updated: 2025-12-03
+"""
+
+
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response

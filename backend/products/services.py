@@ -1,4 +1,13 @@
-# services/category_service.py
+"""
+Description: Category Services
+ 
+File: services.py
+Author: Anthony Bañon
+Created: 2025-12-03
+Last Updated: 2025-12-03
+"""
+
+
 import logging
 from typing import Optional, Dict, Any, Tuple
 from django.core.exceptions import ValidationError
