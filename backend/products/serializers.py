@@ -166,16 +166,16 @@ class CategoryListSerializer(CategorySerializer):
 
 ##### Product Serializers #####
 
-class ProductImageSerializer(serializers.ModelSerializer):
+class ProductImageFieldSerializer(serializers.ModelSerializer):
     """
-    Serializer for ProductImage model
+    Serializer for product image field with validation
     """
     image_url = serializers.SerializerMethodField()
     
     class Meta:
-        model = ProductImage
-        fields = ['id', 'image', 'image_url', 'is_primary']
-        read_only_fields = ['id', 'image_url']
+        model = Product
+        fields = ['id', 'name', 'image', 'image_url']
+        read_only_fields = ['id', 'name', 'image_url']
     
     def get_image_url(self, obj):
         """Return full URL for the image"""
@@ -210,73 +210,63 @@ class ProductListSerializer(serializers.ModelSerializer):
     """
     category_name = serializers.CharField(source='category.name', read_only=True)
     brand_name = serializers.CharField(source='brand.name', read_only=True)
-    primary_image = serializers.SerializerMethodField()
-    image_urls = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
     
     class Meta:
         model = Product
         fields = [
             'id', 'name', 'slug', 'category', 'category_name', 
             'brand', 'brand_name', 'price', 'stock', 'is_active',
-            'carbon_footprint', 'eco_badge', 'primary_image',
-            'image_urls', 'created_at'
+            'carbon_footprint', 'eco_badge', 'image', 'image_url', 'created_at'
         ]
-        read_only_fields = ['id', 'category_name', 'brand_name', 'primary_image', 'image_urls']
+        read_only_fields = ['id', 'category_name', 'brand_name', 'image_url']
     
-    def get_primary_image(self, obj):
-        """Get primary image URL"""
-        primary_image = obj.images.filter(is_primary=True).first()
-        if primary_image and hasattr(primary_image.image, 'url'):
+    def get_image_url(self, obj):
+        """Get image URL"""
+        if obj.image and hasattr(obj.image, 'url'):
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(primary_image.image.url)
-            return primary_image.image.url
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
         return None
-    
-    def get_image_urls(self, obj):
-        """Get all image URLs"""
-        urls = []
-        request = self.context.get('request')
-        
-        for image in obj.images.all():
-            if hasattr(image.image, 'url'):
-                url = image.image.url
-                if request:
-                    url = request.build_absolute_uri(url)
-                urls.append({
-                    'id': image.id,
-                    'url': url,
-                    'is_primary': image.is_primary
-                })
-        
-        return urls
 
 
 class ProductSerializer(serializers.ModelSerializer):
     """
-    Detailed serializer for Product model with nested images
+    Detailed serializer for Product model with single image
     """
-    images = ProductImageSerializer(many=True, required=False)
+    image_url = serializers.SerializerMethodField()
     category_name = serializers.CharField(source='category.name', read_only=True)
     brand_name = serializers.CharField(source='brand.name', read_only=True)
     
     class Meta:
         model = Product
         fields = [
-            'id', 'name', 'slug', 'description', 'category', 'category_name',
-            'brand', 'brand_name', 'climatiq_category', 'price', 'stock',
-            'is_active', 'ingredient_main', 'base_type', 'packaging_material',
-            'origin_country', 'weight', 'recyclable_packaging', 'transportation_type',
-            'carbon_footprint', 'eco_badge', 'images', 'created_at', 'updated_at'
+            'id', 'name', 'slug', 'description', 'image', 'image_url',
+            'category', 'category_name', 'brand', 'brand_name', 'climatiq_category', 
+            'price', 'stock', 'is_active', 'ingredient_main', 'base_type', 
+            'packaging_material', 'origin_country', 'weight', 'recyclable_packaging', 
+            'transportation_type', 'carbon_footprint', 'eco_badge', 
+            'created_at', 'updated_at'
         ]
         read_only_fields = [
             'id', 'category_name', 'brand_name', 'carbon_footprint', 
-            'eco_badge', 'created_at', 'updated_at'
+            'eco_badge', 'image_url', 'created_at', 'updated_at'
         ]
         extra_kwargs = {
             'slug': {'required': False, 'allow_blank': True},
             'climatiq_category': {'required': False},
+            'image': {'required': False}
         }
+    
+    def get_image_url(self, obj):
+        """Get image URL"""
+        if obj.image and hasattr(obj.image, 'url'):
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
     
     def validate_name(self, value):
         """Validate product name"""
@@ -335,6 +325,24 @@ class ProductSerializer(serializers.ModelSerializer):
             )
         return value.upper()
     
+    def validate_image(self, value):
+        """Validate product image"""
+        if value:
+            # Check file size
+            if value.size > PRODUCT_IMAGE_MAX_SIZE_BYTES:
+                raise serializers.ValidationError(
+                    VALIDATION_PRODUCT_IMAGE_TOO_LARGE
+                )
+            
+            # Check file type
+            ext = os.path.splitext(value.name)[1].lower()
+            if ext not in PRODUCT_IMAGE_ALLOWED_EXTENSIONS:
+                raise serializers.ValidationError(
+                    VALIDATION_PRODUCT_IMAGE_INVALID_FORMAT
+                )
+        
+        return value
+    
     def validate(self, data):
         """Custom validation for product data"""
         # Generate slug from name if not provided
@@ -350,20 +358,10 @@ class ProductSerializer(serializers.ModelSerializer):
         # Validate category exists
         if data.get('category'):
             try:
-                category = Category.objects.get(id=data['category'].id)
-                data['category'] = category
+                Category.objects.get(id=data['category'].id)
             except Category.DoesNotExist:
                 raise serializers.ValidationError({
                     'category': ERROR_CATEGORY_NOT_FOUND
-                })
-        
-        # Validate images have at least one primary
-        images_data = data.get('images', [])
-        if images_data:
-            primary_count = sum(1 for img in images_data if img.get('is_primary', False))
-            if primary_count == 0:
-                raise serializers.ValidationError({
-                    'images': VALIDATION_PRODUCT_PRIMARY_IMAGE_REQUIRED
                 })
         
         return data
@@ -371,10 +369,10 @@ class ProductSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Create product using service layer"""
         try:
-            # Extract images data
-            images_data = validated_data.pop('images', [])
+            # Extract image from validated data
+            image = validated_data.pop('image', None)
             
-            # Get brand from context (usually from request user)
+            # Get brand from context (from request user)
             request = self.context.get('request')
             if not request or not request.user.is_authenticated:
                 raise serializers.ValidationError(AUTHENTICATION_REQUIRED)
@@ -388,7 +386,7 @@ class ProductSerializer(serializers.ModelSerializer):
             product = ProductService.create_product(
                 data=validated_data,
                 brand=brand,
-                images_data=images_data
+                image=image
             )
             
             return product
@@ -399,8 +397,8 @@ class ProductSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """Update product using service layer"""
         try:
-            # Extract images data
-            images_data = validated_data.pop('images', None)
+            # Extract image from validated data
+            image = validated_data.pop('image', None)
             
             # Get user for permission check
             request = self.context.get('request')
@@ -411,7 +409,7 @@ class ProductSerializer(serializers.ModelSerializer):
             product = ProductService.update_product(
                 product=instance,
                 data=validated_data,
-                images_data=images_data
+                image=image
             )
             
             return product
@@ -437,20 +435,10 @@ class ProductCreateSerializer(ProductSerializer):
             'weight': {'required': True},
             'transportation_type': {'required': True},
         }
-    
-    def validate(self, data):
-        """Additional validation for creation"""
-        data = super().validate(data)
-        
-        # Validate brand ownership (for creation, brand comes from user)
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            try:
-                brand = request.user.brandprofile
-                # Brand is set from user, not from input
-            except BrandProfile.DoesNotExist:
-                raise serializers.ValidationError({
-                    'brand': "User does not have a brand profile"
-                })
-        
-        return data
+    """
+    Serializer for removing a product image
+    """
+    image_id = serializers.IntegerField(
+        required=True,
+        help_text="ID of the image to remove"
+    )

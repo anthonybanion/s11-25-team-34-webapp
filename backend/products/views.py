@@ -26,10 +26,12 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
 from .models import Category, Product
-from .serializers import CategorySerializer, CategoryListSerializer, CategoryImageSerializer, ProductSerializer, ProductListSerializer, ProductCreateSerializer
+from .serializers import CategorySerializer, CategoryListSerializer, CategoryImageSerializer, ProductSerializer, ProductListSerializer, ProductCreateSerializer, ProductImageUploadSerializer, ProductImageRemoveSerializer
 from .services import CategoryService, ProductService, BusinessException
 from .constants import *
 from .filters import ProductFilter
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 import logging
 logger = logging.getLogger(__name__)
@@ -174,6 +176,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         )
 
 ######## Product Views #####
+
 class ProductViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing Product resources
@@ -212,9 +215,9 @@ class ProductViewSet(viewsets.ModelViewSet):
                 if self.request.query_params.get('my_products') == 'true':
                     queryset = queryset.filter(brand=self.request.user.brandprofile)
         
-        # Optimize queries
+        # Optimize queries - remove prefetch_related('images') as we now have single image
         if self.action == 'list':
-            queryset = queryset.select_related('category', 'brand').prefetch_related('images')
+            queryset = queryset.select_related('category', 'brand')
         
         return queryset
     
@@ -254,13 +257,24 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         
         try:
-            self.perform_create(serializer)
+            # Create product through serializer which calls ProductService
+            product = serializer.save()
+            
             return Response(
                 {
                     'detail': SUCCESS_PRODUCT_CREATED,
-                    'product': serializer.data
+                    'product': ProductSerializer(product, context={'request': request}).data
                 },
                 status=status.HTTP_201_CREATED
+            )
+        except ValidationError as ve:
+            logger.error(f"Validation error creating product: {ve}")
+            return Response(
+                {
+                    'detail': ERROR_PRODUCT_CREATE_FAILED,
+                    'errors': ve.detail
+                },
+                status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
             logger.error(f"Error creating product: {str(e)}")
@@ -287,13 +301,24 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         
         try:
-            self.perform_update(serializer)
+            # Update product through serializer which calls ProductService
+            updated_product = serializer.save()
+            
             return Response(
                 {
                     'detail': SUCCESS_PRODUCT_UPDATED,
-                    'product': serializer.data
+                    'product': ProductSerializer(updated_product, context={'request': request}).data
                 },
                 status=status.HTTP_200_OK
+            )
+        except ValidationError as ve:
+            logger.error(f"Validation error updating product: {ve}")
+            return Response(
+                {
+                    'detail': ERROR_PRODUCT_UPDATE_FAILED,
+                    'errors': ve.detail
+                },
+                status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
             logger.error(f"Error updating product: {str(e)}")
@@ -310,6 +335,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         product = self.get_object()
         
         try:
+            # Use ProductService directly for deletion
             ProductService.delete_product(product, request.user)
             return Response(
                 {'detail': SUCCESS_PRODUCT_DELETED},
@@ -322,6 +348,12 @@ class ProductViewSet(viewsets.ModelViewSet):
                     'error_code': e.error_code,
                     'details': e.details
                 },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            logger.error(f"Error deleting product: {str(e)}")
+            return Response(
+                {'detail': ERROR_PRODUCT_DELETE_FAILED},
                 status=status.HTTP_400_BAD_REQUEST
             )
     
@@ -373,6 +405,12 @@ class ProductViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
+        except Exception as e:
+            logger.error(f"Error activating product: {str(e)}")
+            return Response(
+                {'detail': ERROR_PRODUCT_ACTIVATED},
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
     @action(detail=True, methods=['post'], url_path='deactivate')
     def deactivate(self, request, slug=None):
@@ -397,6 +435,12 @@ class ProductViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
+        except Exception as e:
+            logger.error(f"Error deactivating product: {str(e)}")
+            return Response(
+                {'detail': ERROR_PRODUCT_DEACTIVATED},
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
     @action(detail=True, methods=['get'], url_path='similar')
     def similar_products(self, request, slug=None):
@@ -406,7 +450,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         """
         product = self.get_object()
         
-        # Find similar products (same category, similar price range)
+        # Find similar products (same category, similar characteristics)
         similar_products = Product.objects.filter(
             category=product.category,
             is_active=True
@@ -415,7 +459,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         ).filter(
             Q(base_type=product.base_type) |
             Q(packaging_material=product.packaging_material)
-        ).select_related('category', 'brand').prefetch_related('images')[:8]
+        ).select_related('category', 'brand')[:8]  # Removed prefetch_related('images')
         
         serializer = ProductListSerializer(
             similar_products, 
@@ -425,7 +469,54 @@ class ProductViewSet(viewsets.ModelViewSet):
         
         return Response(serializer.data)
 
+
 class ProductSearchView(generics.ListAPIView):
+    """
+    Dedicated search view for products with advanced filtering
+    """
+    queryset = Product.objects.filter(is_active=True)
+    serializer_class = ProductListSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = ProductFilter
+    search_fields = ['name', 'description', 'ingredient_main', 'brand__name']
+    ordering_fields = ['price', 'carbon_footprint', 'created_at']
+    
+    def get_queryset(self):
+        """Optimize search queryset"""
+        queryset = super().get_queryset()
+        queryset = queryset.select_related('category', 'brand')  # Removed prefetch_related('images')
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        """Override to add search metadata"""
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        # Get search query
+        search_query = request.query_params.get('search', '')
+        
+        # Validate search query length
+        if search_query and len(search_query) < PRODUCT_SEARCH_MIN_QUERY_LENGTH:
+            return Response(
+                {
+                    'detail': f"Search query must be at least {PRODUCT_SEARCH_MIN_QUERY_LENGTH} characters"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response = self.get_paginated_response(serializer.data)
+            response.data['search_query'] = search_query
+            response.data['total_results'] = queryset.count()
+            return response
+        
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            'results': serializer.data,
+            'search_query': search_query,
+            'total_results': queryset.count()
+        })
     """
     Dedicated search view for products with advanced filtering
     """
