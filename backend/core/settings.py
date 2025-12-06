@@ -47,14 +47,14 @@ if USE_CLOUDINARY:
         'API_SECRET': os.getenv('API_SECRET'),
     }
 
-    MEDIA_URL = '/media/'   # <-- NECESARIO PARA CLOUINARY
+    MEDIA_URL = '/ecoshop/'   # <-- NECESARIO PARA CLOUINARY
 else:
     # -------------------------
     # MEDIA CONFIG (local por defecto)
     # -------------------------
     print("→ Using Local Storage")
     MEDIA_URL = '/media/'
-    # MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 
 
