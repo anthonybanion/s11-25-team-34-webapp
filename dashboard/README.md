@@ -1,6 +1,6 @@
-# 🌱 EcoShop Dashboard
+# EcoShop Dashboard
 
-Dashboard interactivo para análisis de impacto ambiental.
+Dashboard interactivo de e-commerce para análisis de impacto ambiental.
 
 ## Instalación
 
@@ -56,4 +56,5 @@ dashboard/
 
 - **Inicio**: KPIs y estadísticas generales
 - **Análisis**: Gráficos de composición y comparativas
+
 - **Explorador**: Filtros avanzados de productos
