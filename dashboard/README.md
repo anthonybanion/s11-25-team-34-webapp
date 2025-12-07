@@ -36,7 +36,7 @@ Se abre automáticamente en: `http://localhost:8501`
 
 ## Requisitos previos
 
-Antes de ejecutar el dashboard, asegurate de tener los datos:
+Antes de ejecutar el dashboard, asegurarse de tener los datos:
 ```bash
 cd backend/ecoshop-data
 python data_module/impact_calculator.py
@@ -58,3 +58,4 @@ dashboard/
 - **Análisis**: Gráficos de composición y comparativas
 
 - **Explorador**: Filtros avanzados de productos
+
