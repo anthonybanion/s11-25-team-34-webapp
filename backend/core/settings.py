@@ -236,15 +236,19 @@ REST_FRAMEWORK = {
 
 SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
-    'DEFAULT_MODEL_RENDERING': 'example',
     'SECURITY_DEFINITIONS': {
         'Token': {
             'type': 'apiKey',
             'name': 'Authorization',
-            'in': 'header'
+            'in': 'header',
         }
     },
-    'DEFAULT_AUTO_SCHEMA_CLASS': 'core.swagger_fix.FixDuplicateSchema',
-    'DEFAULT_INFO': 'core.urls.schema_view',
+    'DEFAULT_MODEL_RENDERING': 'example',
+
+    # 🔥 FORZAR SWAGGER A USAR CDN (Vercel necesita esto)
+    'SWAGGER_UI_DIST': 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.5.0/',
+    'SWAGGER_UI_BUNDLE_JS': 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.5.0/swagger-ui-bundle.js',
+    'SWAGGER_UI_STANDALONE_PRESET_JS': 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.5.0/swagger-ui-standalone-preset.js',
+    'SWAGGER_UI_CSS': 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.5.0/swagger-ui.css',
 }
 
