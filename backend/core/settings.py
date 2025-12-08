@@ -33,7 +33,16 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 USE_CLOUDINARY = os.getenv("USE_CLOUDINARY", "False") == "True"
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    "s11-25-team-34-webapp.vercel.app",
+    "127.0.0.1",
+    "localhost"
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://s11-25-team-34-webapp.vercel.app"
+]
+
 
 
 
