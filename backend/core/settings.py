@@ -212,6 +212,9 @@ STATIC_URL = 'static/'
 # The absolute path to the directory where collectstatic 
 # will collect static files for deployment.
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  
+# Additional locations the staticfiles app will traverse
+STATICFILES_DIRS = []
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -254,10 +257,14 @@ SWAGGER_SETTINGS = {
     },
     'DEFAULT_MODEL_RENDERING': 'example',
 
-    # 🔥 FORZAR SWAGGER A USAR CDN (Vercel necesita esto)
     'SWAGGER_UI_DIST': 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.5.0/',
     'SWAGGER_UI_BUNDLE_JS': 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.5.0/swagger-ui-bundle.js',
     'SWAGGER_UI_STANDALONE_PRESET_JS': 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.5.0/swagger-ui-standalone-preset.js',
     'SWAGGER_UI_CSS': 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.5.0/swagger-ui.css',
+
+    'DEEP_LINKING': True,
+    'SHOW_EXTENSIONS': True,
+    'SHOW_COMMON_EXTENSIONS': True,
 }
+
 
