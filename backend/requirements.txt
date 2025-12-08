@@ -11,7 +11,7 @@ djangorestframework==3.16.1
 drf-yasg==1.21.11
 idna==3.11
 inflection==0.5.1
-mysqlclient==2.2.7
+# mysqlclient==2.2.7
 numpy==2.3.5
 packaging==25.0
 pandas==2.3.3
