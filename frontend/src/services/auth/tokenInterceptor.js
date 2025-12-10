@@ -164,24 +164,6 @@ class TokenInterceptor {
 
     return headers;
   }
-
-  // Check token validity by making a simple API call
-  async validateToken() {
-    const token = this.getToken();
-    if (!token) return false;
-
-    try {
-      // Make a simple API call to validate token
-      // You might want to create a specific endpoint for this, e.g., /api/validate-token/
-      const response = await axios.get('/api/user/profile/', {
-        headers: { Authorization: `Token ${token}` },
-      });
-      return response.status === 200;
-    } catch (error) {
-      console.error('Token validation failed:', error);
-      return false;
-    }
-  }
 }
 
 export const tokenInterceptor = new TokenInterceptor();

@@ -13,7 +13,7 @@ import { tokenInterceptor } from './auth/tokenInterceptor';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-class ApiClient {
+class Api {
   constructor() {
     this.baseURL = BASE_URL;
     this.tokenKey = 'auth_token';
@@ -208,4 +208,4 @@ class ApiClient {
   }
 }
 
-export const apiClient = new ApiClient();
+export const api = new Api();
