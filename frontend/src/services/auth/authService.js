@@ -14,12 +14,12 @@ import { api } from '../api';
 export const authService = {
   // Login
   async login(username, password) {
-    return await api.post('/auth/login', { username, password });
+    return await api.post('/auth/login/', { username, password });
   },
 
   // Cambiar contraseña
   async changePassword(current_password, new_password) {
-    return await api.post('/auth/change-password', {
+    return await api.post('/auth/change-password/', {
       current_password,
       new_password,
     });
@@ -27,11 +27,11 @@ export const authService = {
 
   // Obtener perfil
   async getProfile() {
-    return await api.get('/profile');
+    return await api.get('/profile/');
   },
 
   // Logout
   async logout() {
-    return await api.post('/auth/logout');
+    return await api.post('/auth/logout/');
   },
 };

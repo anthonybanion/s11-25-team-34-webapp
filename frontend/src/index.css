@@ -47,4 +47,8 @@
   --color-text-secondary: var(--color-gray-500);
   --color-text-placeholder: var(--color-gray-300);
   --color-text-discount: var(--color-green-100);
+
+  /*extra*/
+  --color-error: #ff4d4f;
+  --color-success: #52c41a;
 }
