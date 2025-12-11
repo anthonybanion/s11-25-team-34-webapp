@@ -11,35 +11,24 @@
 import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 // Pages
-// import ClothesPage from '../pages/clothes/ClothesPage';
 // import CartPage from '../pages/cart/CartPage';
 import HomePage from '../pages/home/HomePage';
-// import ProfilePage from '../pages/profile/ProfilePage';
-// import LoginPage from '../pages/login/LoginPage';
-// import UnauthorizedPage from '../pages/auth/Unauthorized';
-// import RegisterPage from '../pages/register/RegisterPage';
-// import SignupPage from '../pages/signup/SignupPage';
+import ProfilePage from '../pages/profile/ProfilePage';
+import LoginPage from '../pages/login/LoginPage';
+import UnauthorizedPage from '../pages/auth/Unauthorized';
+import RegisterPage from '../pages/register/RegisterPage';
 // // Action Wrappers
-// import { ProtectedRoute } from './ProtectedRoute';
-// import { SignupRoute } from './SignupRoute';
+import { ProtectedRoute } from './ProtectedRoute';
+import { SignupRoute } from './SignupRoute';
 
 export const AppRoutes = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      {/* <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} /> */}
-      {/* <Route
-        path="/signup"
-        element={
-          <SignupRoute>
-            <SignupPage />
-          </SignupRoute>
-        }
-      />
-      <Route path="/clothes" element={<ClothesPage />} />
-      <Route path="/cart" element={<CartPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      {/* <Route path="/cart" element={<CartPage />} /> */}
       <Route
         path="/profile"
         element={
@@ -48,7 +37,7 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="/unauthorized" element={<UnauthorizedPage />} /> */}
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
     </Routes>
   );
 };

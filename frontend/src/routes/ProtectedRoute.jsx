@@ -14,7 +14,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ROUTES } from '../utils/constants';
 
-const ProtectedRoute = ({
+export const ProtectedRoute = ({
   children,
   requiredRole = null,
   requiredBrandManager = false,
