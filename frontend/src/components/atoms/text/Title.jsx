@@ -15,12 +15,11 @@ export const Title = ({
   ...props
 }) => {
   // Base styles
-  const baseStyles = 'font-inter font-semibold text-text-primary';
+  const baseStyles = 'font-instrument-sans';
   // Define variant styles
   const variants = {
-    brand: 'text-xl',
-    title: 'text-2xl font-bold sm:text-3xl',
-    subtitle: 'text-lg sm:text-3xl',
+    title: 'font-bold',
+    subtitle: 'font-semibold',
   };
   // Determine the HTML tag based on variant
   const Tag = variant === 'title' ? 'h1' : 'h2';

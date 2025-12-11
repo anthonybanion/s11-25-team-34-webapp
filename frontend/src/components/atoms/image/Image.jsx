@@ -1,5 +1,5 @@
 export const Image = ({ src, alt = '', className = '' }) => {
-  const baseStyles = 'w-full h-full object-cover select-none';
+  const baseStyles = 'w-full object-cover select-none';
   return (
     <img
       src={src}

@@ -17,11 +17,13 @@ export const Button = ({
   ...props
 }) => {
   const baseStyles =
-    'flex justify-center items-center font-instrument-sans font-semibold rounded-4xl border-2 border-primary transition-colors text-xl text-text-primary';
+    'flex justify-center items-center font-instrument-sans font-semibold rounded-4xl  transition-colors text-xl text-text-primary';
   // Define variant styles
   const variants = {
     default:
-      ' hover:bg-[var(--color-text-placeholder)] focus:bg-[var(--color-text-placeholder)] active:bg-[var(--color-text-placeholder)]',
+      ' hover:bg-[var(--color-text-primary)] focus:bg-[var(--color-text-primary)] active:bg-[var(--color-text-primary)] hover:text-white focus:text-white active:text-white focus:outline-none',
+    ghost:
+      'bg-transparent hover:bg-[var(--color-text-primary)] focus:bg-[var(--color-text-primary)] active:bg-[var(--color-text-primary)] focus:outline-none',
   };
 
   const isIconButton = !children && IconComponent;
