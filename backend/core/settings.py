@@ -35,9 +35,22 @@ else:
 
 USE_CLOUDINARY = os.getenv("USE_CLOUDINARY", "False") == "True"
 
+# Allowed Hosts
 ALLOWED_HOSTS = [
     "127.0.0.1",
-    "localhost"
+    "localhost",
+
+    # Frontend Vercel domain (WITHOUT https://)
+    "s11-25-team-34-webapp.vercel.app",
+
+    # Backend Render domain (WITHOUT https://)
+    "ecoshop-ksu6.onrender.com",
+]
+
+# CSRF Trusted Origins
+CSRF_TRUSTED_ORIGINS = [
+    "https://s11-25-team-34-webapp.vercel.app",
+    "https://ecoshop-ksu6.onrender.com",
 ]
 #  Render.com deployment settings
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
@@ -46,9 +59,11 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # CSRF Trusted Origins only for Render deployment
-CSRF_TRUSTED_ORIGINS = []
+
 if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+
 
 
 
@@ -126,9 +141,11 @@ MIDDLEWARE = [
 
 # CORS Configuration - step 3
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # React
+    "http://localhost:5173",
     "http://127.0.0.1:5173",
-    # Add other allowed origins as needed
+
+    # Production frontend (Vercel)
+    "https://s11-25-team-34-webapp.vercel.app",
 ]
 
 ROOT_URLCONF = 'core.urls'
