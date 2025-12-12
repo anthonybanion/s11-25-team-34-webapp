@@ -34,7 +34,7 @@ export const HomeHeader = () => {
           <SearchIcon />
         </Link>
         <Link to="/cart">
-          <CartIcon />
+          <CartIcon showCount={true} />
         </Link>
         <Link to="/profile">
           <UserIcon />

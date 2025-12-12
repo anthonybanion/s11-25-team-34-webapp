@@ -11,7 +11,7 @@
 import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 // Pages
-// import CartPage from '../pages/cart/CartPage';
+import CartPage from '../pages/cart/CartPage';
 import HomePage from '../pages/home/HomePage';
 import ProfilePage from '../pages/profile/ProfilePage';
 import LoginPage from '../pages/login/LoginPage';
@@ -28,7 +28,7 @@ export const AppRoutes = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      {/* <Route path="/cart" element={<CartPage />} /> */}
+      <Route path="/cart" element={<CartPage />} />
       <Route
         path="/profile"
         element={

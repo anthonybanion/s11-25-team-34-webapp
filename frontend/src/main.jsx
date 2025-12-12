@@ -5,12 +5,15 @@ import App from './App.jsx';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { CartProvider } from './contexts/CartContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <App />
-      <ToastContainer />
+      <CartProvider>
+        <App />
+        <ToastContainer />
+      </CartProvider>
     </AuthProvider>
   </StrictMode>
 );
