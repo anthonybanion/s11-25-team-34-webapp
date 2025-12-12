@@ -149,6 +149,37 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True 
 
+# =====================================================
+# SESSION & CSRF SETTINGS (DEV vs PROD)  👇 PEGAR AQUÍ
+# =====================================================
+
+if DEBUG:
+    # --- DESARROLLO ---
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
+    SESSION_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_SAMESITE = "Lax"
+
+    SESSION_COOKIE_DOMAIN = None
+    CSRF_COOKIE_DOMAIN = None
+
+else:
+    # --- PRODUCCIÓN ---
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    SESSION_COOKIE_SAMESITE = "None"
+    CSRF_COOKIE_SAMESITE = "None"
+
+    RENDER_HOST = os.environ.get(
+        "RENDER_EXTERNAL_HOSTNAME", 
+        "ecoshop-ksu6.onrender.com"
+    )
+
+    SESSION_COOKIE_DOMAIN = f".{RENDER_HOST}"
+    CSRF_COOKIE_DOMAIN = f".{RENDER_HOST}"
+
 ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
