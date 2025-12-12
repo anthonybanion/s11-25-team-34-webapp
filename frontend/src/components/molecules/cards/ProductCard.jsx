@@ -10,7 +10,13 @@ export const ProductCard = ({
   price,
   ecoBadge,
   onAddToCart,
+  productId,
 }) => {
+  const handleAddToCart = () => {
+    if (onAddToCart) {
+      onAddToCart(productId); // Pasar el ID del producto
+    }
+  };
   return (
     <div className=" bg-bg-card rounded-lg shadow-md overflow-hidden flex flex-col">
       <Image
@@ -27,7 +33,7 @@ export const ProductCard = ({
           <EcoBadge>{ecoBadge}</EcoBadge>
         </div>
 
-        <CardButton onClick={onAddToCart} />
+        <CardButton onClick={handleAddToCart} />
       </div>
     </div>
   );

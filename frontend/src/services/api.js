@@ -67,6 +67,7 @@ class Api {
     const config = {
       ...options,
       headers,
+      credentials: 'include',
     };
 
     try {

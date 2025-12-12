@@ -6,18 +6,29 @@ import homeImage from '../../assets/images/home.jpg';
 import { useMemo } from 'react';
 
 export default function HomePage() {
-  // Use custom hook for home page logic
-  const { discountProducts, regularProducts, loading } = useHomePageLogic();
+  const { discountProducts, regularProducts, loading, handleAddToCart } =
+    useHomePageLogic();
 
   const DiscountProductContent = useMemo(
-    () => <DiscountProductGrid products={discountProducts} />,
-    [discountProducts]
+    () => (
+      <DiscountProductGrid
+        products={discountProducts}
+        onAddToCart={handleAddToCart} // AÑADIDO
+      />
+    ),
+    [discountProducts, handleAddToCart]
   );
 
   const productContent = useMemo(
-    () => <ProductGrid products={regularProducts} />,
-    [regularProducts]
+    () => (
+      <ProductGrid
+        products={regularProducts}
+        onAddToCart={handleAddToCart} // AÑADIDO
+      />
+    ),
+    [regularProducts, handleAddToCart]
   );
+
   return (
     <div>
       <HomeTemplate

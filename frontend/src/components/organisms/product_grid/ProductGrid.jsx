@@ -1,7 +1,7 @@
 import { ProductCard } from '../../molecules/cards/ProductCard';
 import { memo } from 'react';
 
-export const ProductGrid = memo(({ products }) => {
+export const ProductGrid = memo(({ products, onAddToCart }) => {
   if (!products) return null;
   console.log('products EN GRID:', products);
   return (
@@ -13,6 +13,8 @@ export const ProductGrid = memo(({ products }) => {
           name={product.name}
           price={product.price}
           ecoBadge={product.ecoBadge}
+          productId={product.id} // AÑADIDO
+          onAddToCart={onAddToCart} // PASADO AL CARD
         />
       ))}
     </div>

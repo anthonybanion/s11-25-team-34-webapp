@@ -1,3 +1,4 @@
+// homePageLogic.js
 // ==========================================
 //
 // Description: Home Page Business Logic
@@ -10,20 +11,28 @@
 
 import { productService } from '../../services/products/productService';
 import { useNotification } from '../../hooks/useNotification';
-import { useState, useEffect, useMemo } from 'react';
-
-const STATIC_URL =
-  import.meta.env.VITE_STATIC_URL || 'http://localhost:8000/media';
+import { useState, useEffect } from 'react';
+import { useCart } from '../../contexts/CartContext'; // IMPORTANTE: Añadir esto
 
 export const useHomePageLogic = () => {
-  const { showError } = useNotification();
+  const { showSuccess, showError } = useNotification();
+  const {
+    addToCartOptimistic, // Usar esta función en lugar de cartService.addItem
+    cartCount, // Usar esto en lugar de cartItemCount
+    refreshCart, // Usar esto si necesitas refrescar
+  } = useCart(); // Obtener funciones del contexto
+
   const [regularProducts, setRegularProducts] = useState([]);
   const [discountProducts, setDiscountProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  // REMOVER: const [cartItemCount, setCartItemCount] = useState(0); // Ya no necesitamos esto
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
+        setLoading(true);
+
+        // 1. Cargar productos (esto sigue igual)
         const response = await productService.getAll();
         const productsData = response.results || [];
 
@@ -54,19 +63,60 @@ export const useHomePageLogic = () => {
 
         setDiscountProducts(discountList);
         setRegularProducts(regularList);
+
+        // 2. El contador del carrito ahora viene del contexto
+        // Ya no necesitamos cargarlo manualmente aquí
+        // El CartProvider ya lo carga automáticamente
       } catch (error) {
+        console.error('Error in home page logic:', error);
         showError('Failed to load products');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
-  }, []);
+    fetchData();
+  }, []); // ✅ Empty dependency array - se ejecuta solo al montar
+
+  // Función para añadir al carrito - AHORA CON CONTEXTO
+  const handleAddToCart = async (productId) => {
+    console.log('ID RECIBIDO EN ADD:', productId, typeof productId);
+    const id = Number(productId);
+    try {
+      // Buscar el producto en los arrays ya cargados
+      const allProducts = [...discountProducts, ...regularProducts];
+      const product = allProducts.find((p) => p.id === id);
+
+      if (!product) {
+        throw new Error('Product not found');
+      }
+
+      // Usar la función del contexto en lugar de cartService
+      await addToCartOptimistic(product, 1);
+      await refreshCart(); // 👈 AGREGAR ESTO
+
+      // NOTA: El contador se actualiza automáticamente en el contexto
+      // No necesitamos setCartItemCount((prev) => prev + 1);
+
+      showSuccess('Producto añadido al carrito');
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      showError(error.message || 'Error al añadir al carrito');
+    }
+  };
+
+  // Función para refrescar contador del carrito - AHORA CON CONTEXTO
+  const refreshCartCount = async () => {
+    // Simplemente llamamos a refreshCart del contexto
+    await refreshCart();
+  };
 
   return {
     discountProducts,
     regularProducts,
     loading,
+    cartItemCount: cartCount, // Usamos cartCount del contexto
+    handleAddToCart,
+    refreshCartCount,
   };
 };
