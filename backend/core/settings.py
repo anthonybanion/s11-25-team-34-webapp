@@ -147,6 +147,7 @@ CORS_ALLOWED_ORIGINS = [
     # Production frontend (Vercel)
     "https://s11-25-team-34-webapp.vercel.app",
 ]
+CORS_ALLOW_CREDENTIALS = True 
 
 ROOT_URLCONF = 'core.urls'
 
